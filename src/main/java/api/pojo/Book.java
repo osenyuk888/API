@@ -15,30 +15,28 @@ import java.time.format.DateTimeFormatter;
 @Builder
 @ToString
 public class Book {
-
     @SerializedName("id")
     @Expose
     private Integer id;
-
     @SerializedName("title")
     @Expose
     @Builder.Default
-    private String title = RandomStringUtils.randomAlphabetic(32);
+    private String title = RandomStringUtils.randomAlphabetic(100);
 
     @SerializedName("description")
     @Expose
     @Builder.Default
-    private String description = RandomStringUtils.randomAlphabetic(32);
+    private String description = RandomStringUtils.randomAlphabetic(100);
 
     @SerializedName("pageCount")
     @Expose
     @Builder.Default
-    private Integer pageCount = RandomUtils.nextInt(0, 1000);
+    private Integer pageCount = RandomUtils.nextInt(1, 100);
 
     @SerializedName("excerpt")
     @Expose
     @Builder.Default
-    private String excerpt = RandomStringUtils.randomAlphabetic(32);
+    private String excerpt = RandomStringUtils.randomAlphabetic(100);
 
     @SerializedName("publishDate")
     @Expose

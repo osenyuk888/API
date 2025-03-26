@@ -2,8 +2,11 @@ package api.clients;
 
 import api.pojo.Book;
 import io.qameta.allure.Step;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
 import org.testng.Assert;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 
@@ -50,5 +53,10 @@ public class BooksClient extends Client<BooksClient> {
     public void verifyBookId(int expectedId) {
         int actualId = getResponse().getBody().as(Book.class).getId();
         Assert.assertEquals(actualId, expectedId);
+    }
+
+    @Step("Getting books list")
+    public List<Book> getBooksList() {
+        return getResponse().getBody().as(new TypeRef<>() {});
     }
 }

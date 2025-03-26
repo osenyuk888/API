@@ -1,11 +1,13 @@
 package testng.api.tests;
 
 import api.clients.BooksClient;
+import api.dataProviders.TestDataProvider;
 import api.pojo.Book;
 import org.apache.http.HttpStatus;
 import org.testng.annotations.Test;
 
 import java.io.File;
+import java.util.List;
 
 public class BooksControllerTests extends BaseApiTest {
     private static final File BOOK_JSON_SCHEMA = new File("src/test/resources/" +
@@ -17,6 +19,7 @@ public class BooksControllerTests extends BaseApiTest {
     @Test(description = "Verify book record can be created")
     public void verifyBookRecordCanBeCreated() {
         Book book = Book.builder().build();
+
         new BooksClient()
                 .createBook(book)
                 .verifyStatusCode(HttpStatus.SC_OK)
@@ -34,27 +37,247 @@ public class BooksControllerTests extends BaseApiTest {
 
     @Test(description = "Verify book record can be gotten")
     public void verifyBookRecordCanBeGotten() {
-        new BooksClient()
-                .getBook(1)
-                .verifyStatusCode(HttpStatus.SC_ACCEPTED) //failing this test case on purpose
+        BooksClient booksClient = new BooksClient();
+        //prepare
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+
+        //test
+        booksClient.getBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(BOOK_JSON_SCHEMA)
-                .verifyBookId(1);
+                .verifyBookId(bookId);
     }
 
     @Test(description = "Verify book record can be deleted")
     public void verifyBookRecordCanBeDeleted() {
-        new BooksClient()
-                .deleteBook(0)
+        BooksClient booksClient = new BooksClient();
+        //prepare
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+
+        booksClient.deleteBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK);
+
+        booksClient.getBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(description = "Verify book record cannot be deleted if already deleted")
+    public void verifyBookRecordCannotBeDeletedIfAlreadyDeleted() {
+        BooksClient booksClient = new BooksClient();
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+
+        booksClient.deleteBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_OK);
+
+        booksClient.deleteBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify book record can be updated")
     public void verifyBookRecordCanBeUpdated() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
         Book book = Book.builder().build();
-        new BooksClient()
-                .updateBook(0, book)
+
+        booksClient.updateBook(bookId, book)
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(BOOK_JSON_SCHEMA)
                 .verifyJsonBody(book);
+    }
+
+    //negative tests
+    @Test(description = "Verify that a book record cannot be retrieved using ID 0")
+    public void verifyBookRecordCannotBeGottenForIdZero() {
+        int bookId = 0;
+        new BooksClient()
+                .getBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(description = "Verify that a book record cannot be retrieved using a negative ID (-1)")
+    public void verifyBookRecordCannotBeGottenForNegativeId() {
+        final int bookId = -1;
+        new BooksClient()
+                .getBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(description = "Verify that a book record cannot be retrieved using the maximum integer value as an ID")
+    public void verifyBookRecordCannotBeGottenForMaxIntId() {
+        new BooksClient()
+                .getBook(Integer.MAX_VALUE)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(description = "Verify book record cannot be created with all null fields")
+    public void verifyBookRecordCannotBeCreatedWithAllNullFields() {
+        //prepare
+        Book book = Book.builder().id(null)
+                .title(null)
+                .description(null)
+                .pageCount(null)
+                .excerpt(null)
+                .publishDate(null)
+                .build();
+
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be created with a negative ID")
+    public void verifyBookRecordCannotBeCreatedWithNegativeID() {
+        //prepare
+        Book book = Book.builder().id(-1).build(); //other fields are correct
+
+        //test
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be created with zero ID")
+    public void verifyBookRecordCannotBeCreatedWithZeroID() {
+        //prepare
+        Book book = Book.builder().id(0).build(); //other fields are correct
+
+        //test
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be created with a negative page count")
+    public void verifyBookRecordCannotBeCreatedWithNegativePageCount() {
+        //prepare
+        Book book = Book.builder().pageCount(-1).build(); //other fields are correct
+
+        //test
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be created with zero page count")
+    public void verifyBookRecordCannotBeCreatedWithZeroPageCount() {
+        //prepare
+        Book book = Book.builder().pageCount(0).build(); //other fields are correct
+
+        //test
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    //Test method that uses DataProvider to test invalid publish dates
+    @Test(description = "Verify book record cannot be created with an invalid publish date",
+            dataProvider = "invalidPublishDates", dataProviderClass = TestDataProvider.class)
+    public void verifyBookRecordCannotBeCreatedWithInvalidPublishDate(String invalidPublishDate) {
+        //prepare
+        Book book = Book.builder().publishDate(invalidPublishDate).build();
+
+        //test
+        new BooksClient()
+                .createBook(book)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be updated with a negative ID")
+    public void verifyBookRecordCannotBeUpdatedWithNegativeID() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        Book updatedBook = Book.builder().id(-1).title("Negative ID").build();
+
+        //test
+        booksClient.updateBook(-1, updatedBook)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be updated with zero ID")
+    public void verifyBookRecordCannotBeUpdatedWithZeroID() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        Book updatedBook = Book.builder().id(0).title("Zero id").build();
+
+        //test
+        booksClient.updateBook(0, updatedBook)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be updated with a negative page count")
+    public void verifyBookRecordCannotBeUpdatedWithNegativePageCount() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        Book updatedBook = Book.builder().id(bookId).pageCount(-100).build();
+
+        //test
+        booksClient.updateBook(bookId, updatedBook)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be updated with zero page count")
+    public void verifyBookRecordCannotBeUpdatedWithZeroPageCount() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        Book updatedBook = Book.builder().id(bookId).pageCount(0).build();
+
+        //test
+        booksClient.updateBook(bookId, updatedBook)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be updated with an invalid publish date",
+            dataProvider = "invalidPublishDates", dataProviderClass = TestDataProvider.class)
+    public void verifyBookRecordCannotBeUpdatedWithInvalidPublishDate(String invalidPublishDate) {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        List<Book> allBooks = booksClient.getBooks().getBooksList();
+        int bookId = allBooks.get(allBooks.size() - 1).getId();
+
+        Book updatedBook = Book.builder()
+                .id(bookId)
+                .publishDate(invalidPublishDate)
+                .build();
+
+        booksClient.updateBook(bookId, updatedBook)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be deleted with non-existing ID")
+    public void verifyBookRecordCannotBeDeletedWithNonExistingID() {
+        //prepare
+        BooksClient booksClient = new BooksClient();
+        int bookId = Integer.MAX_VALUE; // ID that does not exist take it using API or DB
+
+        //test
+        booksClient.deleteBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
+    }
+
+    @Test(description = "Verify book record cannot be deleted with negative ID")
+    public void verifyBookRecordCannotBeDeletedWithNegativeID() {
+        BooksClient booksClient = new BooksClient();
+        int bookId = -1;
+
+        booksClient.deleteBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test(description = "Verify book record cannot be deleted with zero ID")
+    public void verifyBookRecordCannotBeDeletedWithZeroID() {
+        BooksClient booksClient = new BooksClient();
+        int bookId = 0;
+
+        booksClient.deleteBook(bookId)
+                .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 }

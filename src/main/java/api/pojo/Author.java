@@ -20,10 +20,10 @@ public class Author {
     @SerializedName("firstName")
     @Expose
     @Builder.Default
-    private String firstName = RandomStringUtils.randomAlphabetic(10);
+    private String firstName = RandomStringUtils.randomAlphabetic(100);
 
     @SerializedName("lastName")
     @Expose
     @Builder.Default
-    private String lastName = RandomStringUtils.randomAlphabetic(10);
+    private String lastName = RandomStringUtils.randomAlphabetic(100);
 }

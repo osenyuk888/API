@@ -2,10 +2,8 @@ package api.clients;
 
 import api.pojo.Author;
 import io.qameta.allure.Step;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.http.ContentType;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.lang.reflect.Type;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -44,15 +42,6 @@ public class AuthorsClient extends Client<AuthorsClient> {
         return this;
     }
 
-    //Method to extract and parse the response into a List of Authors
-    public List<Author> getAuthorsList() {
-        String jsonResponse = getResponse().getBody().asString();
-
-        Type listType = new TypeToken<List<Author>>() {}.getType();
-
-        return new Gson().fromJson(jsonResponse, listType);
-    }
-
     @Step("Get author")
     public AuthorsClient getAuthor(int id) {
         setResponse(given().pathParam("id", id).get(AUTHORS_ENDPOINT + "/{id}"));
@@ -65,5 +54,10 @@ public class AuthorsClient extends Client<AuthorsClient> {
         setResponse(given().pathParam("id", id).contentType(ContentType.JSON).body(author)
                 .put(AUTHORS_ENDPOINT + "/{id}"));
         return this;
+    }
+
+    @Step("Getting authors books")
+    public List<Author> getAuthorsList() {
+        return getResponse().getBody().as(new TypeRef<>() {});
     }
 }
