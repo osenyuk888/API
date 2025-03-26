@@ -14,7 +14,7 @@ Before you start, make sure you have the following installed:
 2. Import the project as a Maven project in IntelliJ IDEA.
 3. Clone or download the repository to your local machine:
 ```bash
-git clone https://github.com/[your_username]/API.git
+  git clone https://github.com/[your_username]/API.git
 ```
 4. Install dependencies by running the script. This command downloads and installs all required dependencies without running tests.
 ```bash
