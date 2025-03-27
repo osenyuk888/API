@@ -1,7 +1,7 @@
 package testng.api.tests;
 
 import api.clients.BooksClient;
-import api.dataProviders.TestDataProvider;
+import api.data.providers.TestDataProvider;
 import api.pojo.Book;
 import org.apache.http.HttpStatus;
 import org.testng.annotations.Test;
@@ -18,10 +18,10 @@ public class BooksControllerTests extends BaseApiTest {
     //positive tests
     @Test(description = "Verify book record can be created")
     public void verifyBookRecordCanBeCreated() {
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().build();
 
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(BOOK_JSON_SCHEMA)
                 .verifyJsonBody(book);
@@ -29,18 +29,18 @@ public class BooksControllerTests extends BaseApiTest {
 
     @Test(description = "Verify book record list can be gotten")
     public void verifyBookRecordListCanBeGotten() {
-        new BooksClient()
-                .getBooks()
+        BooksClient booksClient = new BooksClient();
+        booksClient.getBooks()
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(BOOKS_JSON_SCHEMA);
     }
 
     @Test(description = "Verify book record can be gotten")
     public void verifyBookRecordCanBeGotten() {
-        BooksClient booksClient = new BooksClient();
         //prepare
+        BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
 
         //test
         booksClient.getBook(bookId)
@@ -51,10 +51,10 @@ public class BooksControllerTests extends BaseApiTest {
 
     @Test(description = "Verify book record can be deleted")
     public void verifyBookRecordCanBeDeleted() {
-        BooksClient booksClient = new BooksClient();
         //prepare
+        BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
 
         booksClient.deleteBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -67,7 +67,7 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCannotBeDeletedIfAlreadyDeleted() {
         BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
 
         booksClient.deleteBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -81,7 +81,7 @@ public class BooksControllerTests extends BaseApiTest {
         //prepare
         BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
         Book book = Book.builder().build();
 
         booksClient.updateBook(bookId, book)
@@ -93,30 +93,33 @@ public class BooksControllerTests extends BaseApiTest {
     //negative tests
     @Test(description = "Verify that a book record cannot be retrieved using ID 0")
     public void verifyBookRecordCannotBeGottenForIdZero() {
+        BooksClient booksClient = new BooksClient();
         int bookId = 0;
-        new BooksClient()
-                .getBook(bookId)
+
+        booksClient.getBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify that a book record cannot be retrieved using a negative ID (-1)")
     public void verifyBookRecordCannotBeGottenForNegativeId() {
+        BooksClient booksClient = new BooksClient();
         final int bookId = -1;
-        new BooksClient()
-                .getBook(bookId)
+
+        booksClient.getBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify that a book record cannot be retrieved using the maximum integer value as an ID")
     public void verifyBookRecordCannotBeGottenForMaxIntId() {
-        new BooksClient()
-                .getBook(Integer.MAX_VALUE)
+        BooksClient booksClient = new BooksClient();
+        booksClient.getBook(Integer.MAX_VALUE)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify book record cannot be created with all null fields")
     public void verifyBookRecordCannotBeCreatedWithAllNullFields() {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().id(null)
                 .title(null)
                 .description(null)
@@ -125,52 +128,51 @@ public class BooksControllerTests extends BaseApiTest {
                 .publishDate(null)
                 .build();
 
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify book record cannot be created with a negative ID")
     public void verifyBookRecordCannotBeCreatedWithNegativeID() {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().id(-1).build(); //other fields are correct
 
         //test
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify book record cannot be created with zero ID")
     public void verifyBookRecordCannotBeCreatedWithZeroID() {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().id(0).build(); //other fields are correct
 
         //test
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify book record cannot be created with a negative page count")
     public void verifyBookRecordCannotBeCreatedWithNegativePageCount() {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().pageCount(-1).build(); //other fields are correct
 
         //test
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify book record cannot be created with zero page count")
     public void verifyBookRecordCannotBeCreatedWithZeroPageCount() {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().pageCount(0).build(); //other fields are correct
 
         //test
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
@@ -179,11 +181,11 @@ public class BooksControllerTests extends BaseApiTest {
             dataProvider = "invalidPublishDates", dataProviderClass = TestDataProvider.class)
     public void verifyBookRecordCannotBeCreatedWithInvalidPublishDate(String invalidPublishDate) {
         //prepare
+        BooksClient booksClient = new BooksClient();
         Book book = Book.builder().publishDate(invalidPublishDate).build();
 
         //test
-        new BooksClient()
-                .createBook(book)
+        booksClient.createBook(book)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
@@ -214,7 +216,7 @@ public class BooksControllerTests extends BaseApiTest {
         //prepare
         BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
         Book updatedBook = Book.builder().id(bookId).pageCount(-100).build();
 
         //test
@@ -227,7 +229,7 @@ public class BooksControllerTests extends BaseApiTest {
         //prepare
         BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
         Book updatedBook = Book.builder().id(bookId).pageCount(0).build();
 
         //test
@@ -241,7 +243,7 @@ public class BooksControllerTests extends BaseApiTest {
         //prepare
         BooksClient booksClient = new BooksClient();
         List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = allBooks.get(allBooks.size() - 1).getId();
+        int bookId = booksClient.getLastBookIdFromList(allBooks);
 
         Book updatedBook = Book.builder()
                 .id(bookId)

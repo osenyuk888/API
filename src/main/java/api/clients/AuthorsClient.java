@@ -58,6 +58,12 @@ public class AuthorsClient extends Client<AuthorsClient> {
 
     @Step("Getting authors books")
     public List<Author> getAuthorsList() {
-        return getResponse().getBody().as(new TypeRef<>() {});
+        return getResponse().getBody().as(new TypeRef<>() {
+        });
+    }
+
+    @Step("Getting last author from list")
+    public int getLastAuthorIdFromList(List<Author> authorsList) {
+        return authorsList.get(authorsList.size() - 1).getId();
     }
 }

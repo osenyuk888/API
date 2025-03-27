@@ -1,9 +1,9 @@
 package testng.api.tests;
 
 import api.clients.AuthorsClient;
+import api.matchers.AuthorMatcher;
 import api.pojo.Author;
 import org.apache.http.HttpStatus;
-import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import java.io.File;
@@ -18,9 +18,10 @@ public class AuthorsControllerTests extends BaseApiTest {
     //positive tests
     @Test(description = "Verify author record can be created")
     public void verifyAuthorRecordCanBeCreated() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().build();
-        new AuthorsClient()
-                .createAuthor(author)
+
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(AUTHOR_JSON_SCHEMA)
                 .verifyJsonBody(author);
@@ -28,8 +29,8 @@ public class AuthorsControllerTests extends BaseApiTest {
 
     @Test(description = "Verify authors record list can be gotten")
     public void verifyAuthorsRecordListCanBeGotten() {
-        new AuthorsClient()
-                .getAuthors()
+        AuthorsClient authorsClient = new AuthorsClient();
+        authorsClient.getAuthors()
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(AUTHORS_JSON_SCHEMA);
     }
@@ -38,7 +39,7 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCanBeGotten() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
 
         authorsClient.getAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK)
@@ -49,7 +50,7 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCanBeDeleted() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
 
         authorsClient.deleteAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -62,7 +63,7 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCannotBeDeletedIfAlreadyDeleted() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
 
         authorsClient.deleteAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -75,11 +76,10 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCanBeUpdated() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
         Author author = Author.builder().build();
 
-        new AuthorsClient()
-                .updateAuthor(authorId, author)
+        authorsClient.updateAuthor(authorId, author)
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(AUTHOR_JSON_SCHEMA)
                 .verifyJsonBody(author);
@@ -87,93 +87,89 @@ public class AuthorsControllerTests extends BaseApiTest {
 
     @Test(description = "Verify authors books record can be gotten")
     public void verifyAuthorsBooksRecordCanBeGotten() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int bookId = 1;
 
-        List<Author> authors = new AuthorsClient()
-                .getAuthorsBooks(bookId)
+        List<Author> authors = authorsClient.getAuthorsBooks(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK)
                 .verifyBodyMatchesJsonSchema(AUTHORS_JSON_SCHEMA)
                 .getAuthorsList();
 
-        //extract method for common cases in future
-        boolean allAuthorsHaveCorrectBookId = authors.stream()
-                .allMatch(author -> author.getIdBook().equals(bookId));
-
-        // Assert that all authors have the correct bookId
-        Assert.assertTrue(allAuthorsHaveCorrectBookId, "Not all authors have the correct bookId");
-
+        AuthorMatcher.hasBookId(authors, bookId);
     }
 
     //negative test cases
     @Test(description = "Verify that an author record cannot be retrieved using ID 0")
     public void verifyAuthorRecordCannotBeGottenForIdZero() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int authorId = 0;
-        new AuthorsClient()
-                .getAuthor(authorId)
+
+        authorsClient.getAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify that an author record cannot be retrieved using a negative ID (-1)")
     public void verifyAuthorRecordCannotBeGottenForNegativeId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int authorId = -1;
-        new AuthorsClient()
-                .getAuthor(authorId)
+
+        authorsClient.getAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify that an author record cannot be retrieved using the maximum integer value as an ID")
     public void verifyAuthorRecordCannotBeGottenForMaxIntId() {
-        new AuthorsClient()
-                .getAuthor(Integer.MAX_VALUE)
+        AuthorsClient authorsClient = new AuthorsClient();
+        authorsClient.getAuthor(Integer.MAX_VALUE)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify that an author record cannot be created with all null fields")
     public void verifyAuthorRecordCannotBeCreatedWithAllNullFields() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().id(null)
                 .idBook(null)
                 .firstName(null)
                 .lastName(null)
                 .build();
 
-        new AuthorsClient()
-                .createAuthor(author)
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify that an author record cannot be created with a negative ID")
     public void verifyAuthorRecordCannotBeCreatedWithNegativeId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().id(-1).build(); //other fields are correct
 
-        new AuthorsClient()
-                .createAuthor(author)
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify that an author record cannot be created with created with zero ID")
     public void verifyAuthorRecordCannotBeCreatedWithZeroId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().id(0).build(); //other fields are correct
 
-        new AuthorsClient()
-                .createAuthor(author)
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify that an author record cannot be created with negative book ID")
     public void verifyAuthorRecordCannotBeCreatedWithNegativeBookId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().idBook(-1).build(); //other fields are correct
 
-        new AuthorsClient()
-                .createAuthor(author)
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
     @Test(description = "Verify that an author record cannot be created with zero book ID")
     public void verifyAuthorRecordCannotBeCreatedWithZeroBookId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         Author author = Author.builder().idBook(0).build(); //other fields are correct
 
-        new AuthorsClient()
-                .createAuthor(author)
+        authorsClient.createAuthor(author)
                 .verifyStatusCode(HttpStatus.SC_BAD_REQUEST);
     }
 
@@ -201,7 +197,7 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCannotBeUpdatedWithNegativeBookId() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
         Author updatedAuthor = Author.builder().idBook(-100).firstName("Negative book ID").build();
 
         //test
@@ -213,7 +209,7 @@ public class AuthorsControllerTests extends BaseApiTest {
     public void verifyAuthorRecordCannotBeUpdatedWithZeroBookId() {
         AuthorsClient authorsClient = new AuthorsClient();
         List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = allAuthors.get(allAuthors.size() - 1).getId();
+        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
         Author updatedAuthor = Author.builder().idBook(0).firstName("Zero book ID").build();
 
         //test
@@ -256,28 +252,28 @@ public class AuthorsControllerTests extends BaseApiTest {
 
     @Test(description = "Verify authors books record cannot be gotten for negative book ID")
     public void verifyAuthorsBooksRecordCanNotBeGottenWithNegativeBookId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int bookId = -1;
 
-        new AuthorsClient()
-                .getAuthorsBooks(bookId)
+        authorsClient.getAuthorsBooks(bookId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify authors books record cannot be gotten for zero book ID")
     public void verifyAuthorsBooksRecordCanNotBeGottenWithZeroBookId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int bookId = 0;
 
-        new AuthorsClient()
-                .getAuthorsBooks(bookId)
+        authorsClient.getAuthorsBooks(bookId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 
     @Test(description = "Verify authors books record cannot be gotten for not existing book ID")
     public void verifyAuthorsBooksRecordCanNotBeGottenWithNotExistingBookId() {
+        AuthorsClient authorsClient = new AuthorsClient();
         int bookId = Integer.MAX_VALUE;
 
-        new AuthorsClient()
-                .getAuthorsBooks(bookId)
+        authorsClient.getAuthorsBooks(bookId)
                 .verifyStatusCode(HttpStatus.SC_NOT_FOUND);
     }
 }

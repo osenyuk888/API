@@ -1,10 +1,14 @@
-package api.dataProviders;
+package api.data.providers;
 
 import org.testng.annotations.DataProvider;
 
 public class TestDataProvider {
 
-    //DataProvider to supply invalid publish dates for testing. Can be used for same data format everywhere.
+    /**
+     * DataProvider to supply invalid publish dates for testing.
+     * Can be used for the same data format everywhere.
+     * For example, Activities API uses the same data format as Books API.
+     */
     @DataProvider(name = "invalidPublishDates")
     public Object[][] provideInvalidPublishDates() {
         return new Object[][]{
