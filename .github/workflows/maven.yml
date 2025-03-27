@@ -51,7 +51,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: allure-report
-        path: target/allure-report
+        path: target/site/allure-maven-plugin/
 
     - name: Deploy Allure report to GitHub Pages
       uses: peaceiris/actions-gh-pages@v4
