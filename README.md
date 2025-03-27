@@ -48,31 +48,41 @@ The project uses the following:
 |   .gitignore
 |   pom.xml
 |   README.md
+|   structure.txt
+|   
++---.github
+|   \---workflows
+|           maven.yml
+|           
 \---src
     +---main
     |   +---java
-    |   |   \---api
-    |   |       +---clients
-    |   |       |       AuthorsClient.java
-    |   |       |       BooksClient.java
-    |   |       |       Client.java
-    |   |       |       
-    |   |       +---config
-    |   |       |       Configuration.java
-    |   |       |       ConfigurationManager.java
-    |   |       |       
-    |   |       +---dataProviders
-    |   |       |       TestDataProvider.java
-    |   |       |       
-    |   |       +---listeners
-    |   |       |       TestListener.java
-    |   |       |       
-    |   |       \---pojo
-    |   |               Author.java
-    |   |               Book.java
-    |   |               
-    |   \---resources
-    |       \---META-INF
+    |      \---api
+    |          +---clients
+    |          |       AuthorsClient.java
+    |          |       BooksClient.java
+    |          |       Client.java
+    |          |       
+    |          +---config
+    |          |       Configuration.java
+    |          |       ConfigurationManager.java
+    |          |       
+    |          +---data
+    |          |   \---providers
+    |          |           TestDataProvider.java
+    |          |           
+    |          +---listeners
+    |          |       TestListener.java
+    |          |       
+    |          +---pojo
+    |          |       Author.java
+    |          |       Book.java
+    |          |       
+    |          \---support
+    |                  AuthorMatcher.java
+    |                  AuthorUtils.java
+    |                  BookUtils.java                      
+    |                           
     \---test
         +---java
         |   \---testng
