@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "id": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "title": {
+        "type": "string",
+        "nullable": true
+      },
+      "description": {
+        "type": "string",
+        "nullable": true
+      },
+      "pageCount": {
+        "type": "integer",
+        "format": "int32"
+      },
+      "excerpt": {
+        "type": "string",
+        "nullable": true
+      },
+      "publishDate": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": ["id", "pageCount", "publishDate"]
+  }
+}

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suite name="Test suite" configfailurepolicy="continue" threadCount="5" parallel="methods">
+    <test name="Tests">
+        <classes>
+            <class name="testng.api.tests.BooksControllerTests"/>
+            <class name="testng.api.tests.AuthorsControllerTests"/>
+        </classes>
+    </test>
+</suite>

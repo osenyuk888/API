@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "idBook": {
+      "type": "integer",
+      "format": "int32"
+    },
+    "firstName": {
+      "type": "string",
+      "nullable": true
+    },
+    "lastName": {
+      "type": "string",
+      "nullable": true
+    }
+  },
+  "required": ["id", "idBook"]
+}
