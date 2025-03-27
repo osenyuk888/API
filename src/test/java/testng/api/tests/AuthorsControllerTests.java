@@ -1,8 +1,9 @@
 package testng.api.tests;
 
 import api.clients.AuthorsClient;
-import api.matchers.AuthorMatcher;
+import api.support.AuthorMatcher;
 import api.pojo.Author;
+import api.support.AuthorUtils;
 import org.apache.http.HttpStatus;
 import org.testng.annotations.Test;
 
@@ -38,8 +39,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify author record can be gotten")
     public void verifyAuthorRecordCanBeGotten() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
 
         authorsClient.getAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK)
@@ -49,8 +51,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify author record can be deleted")
     public void verifyAuthorRecordCanBeDeleted() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
 
         authorsClient.deleteAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -62,8 +65,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify that an author record cannot be deleted if already deleted")
     public void verifyAuthorRecordCannotBeDeletedIfAlreadyDeleted() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
 
         authorsClient.deleteAuthor(authorId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -75,8 +79,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify author record can be updated")
     public void verifyAuthorRecordCanBeUpdated() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
         Author author = Author.builder().build();
 
         authorsClient.updateAuthor(authorId, author)
@@ -90,10 +95,11 @@ public class AuthorsControllerTests extends BaseApiTest {
         AuthorsClient authorsClient = new AuthorsClient();
         int bookId = 1;
 
-        List<Author> authors = authorsClient.getAuthorsBooks(bookId)
+         authorsClient.getAuthorsBooks(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK)
-                .verifyBodyMatchesJsonSchema(AUTHORS_JSON_SCHEMA)
-                .getAuthorsList();
+                .verifyBodyMatchesJsonSchema(AUTHORS_JSON_SCHEMA);
+
+        List<Author> authors = AuthorUtils.getAuthorsList(authorsClient.getResponse());
 
         AuthorMatcher.hasBookId(authors, bookId);
     }
@@ -196,8 +202,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify that an author record cannot be updated with a negative book ID")
     public void verifyAuthorRecordCannotBeUpdatedWithNegativeBookId() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
         Author updatedAuthor = Author.builder().idBook(-100).firstName("Negative book ID").build();
 
         //test
@@ -208,8 +215,9 @@ public class AuthorsControllerTests extends BaseApiTest {
     @Test(description = "Verify that an author record cannot be updated with a zero book ID")
     public void verifyAuthorRecordCannotBeUpdatedWithZeroBookId() {
         AuthorsClient authorsClient = new AuthorsClient();
-        List<Author> allAuthors = authorsClient.getAuthors().getAuthorsList();
-        int authorId = authorsClient.getLastAuthorIdFromList(allAuthors);
+        authorsClient.getAuthors();
+        int authorId = AuthorUtils.getLastAuthorIdFromList(AuthorUtils.
+                getAuthorsList(authorsClient.getResponse()));
         Author updatedAuthor = Author.builder().idBook(0).firstName("Zero book ID").build();
 
         //test

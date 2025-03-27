@@ -3,11 +3,11 @@ package testng.api.tests;
 import api.clients.BooksClient;
 import api.data.providers.TestDataProvider;
 import api.pojo.Book;
+import api.support.BookUtils;
 import org.apache.http.HttpStatus;
 import org.testng.annotations.Test;
 
 import java.io.File;
-import java.util.List;
 
 public class BooksControllerTests extends BaseApiTest {
     private static final File BOOK_JSON_SCHEMA = new File("src/test/resources/" +
@@ -39,8 +39,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCanBeGotten() {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
 
         //test
         booksClient.getBook(bookId)
@@ -53,8 +53,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCanBeDeleted() {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
 
         booksClient.deleteBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -66,8 +66,8 @@ public class BooksControllerTests extends BaseApiTest {
     @Test(description = "Verify book record cannot be deleted if already deleted")
     public void verifyBookRecordCannotBeDeletedIfAlreadyDeleted() {
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
 
         booksClient.deleteBook(bookId)
                 .verifyStatusCode(HttpStatus.SC_OK);
@@ -80,8 +80,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCanBeUpdated() {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
         Book book = Book.builder().build();
 
         booksClient.updateBook(bookId, book)
@@ -215,8 +215,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCannotBeUpdatedWithNegativePageCount() {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
         Book updatedBook = Book.builder().id(bookId).pageCount(-100).build();
 
         //test
@@ -228,8 +228,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCannotBeUpdatedWithZeroPageCount() {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
         Book updatedBook = Book.builder().id(bookId).pageCount(0).build();
 
         //test
@@ -242,8 +242,8 @@ public class BooksControllerTests extends BaseApiTest {
     public void verifyBookRecordCannotBeUpdatedWithInvalidPublishDate(String invalidPublishDate) {
         //prepare
         BooksClient booksClient = new BooksClient();
-        List<Book> allBooks = booksClient.getBooks().getBooksList();
-        int bookId = booksClient.getLastBookIdFromList(allBooks);
+        booksClient.getBooks();
+        int bookId = BookUtils.getLastBookIdFromList(BookUtils.getBooksList(booksClient.getResponse()));
 
         Book updatedBook = Book.builder()
                 .id(bookId)

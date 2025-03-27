@@ -54,15 +54,4 @@ public class BooksClient extends Client<BooksClient> {
         int actualId = getResponse().getBody().as(Book.class).getId();
         Assert.assertEquals(actualId, expectedId);
     }
-
-    @Step("Getting books list")
-    public List<Book> getBooksList() {
-        return getResponse().getBody().as(new TypeRef<>() {
-        });
-    }
-
-    @Step("Getting last book from list")
-    public int getLastBookIdFromList(List<Book> booksList) {
-        return booksList.get(booksList.size() - 1).getId();
-    }
 }

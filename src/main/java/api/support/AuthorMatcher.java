@@ -1,4 +1,4 @@
-package api.matchers;
+package api.support;
 
 import api.pojo.Author;
 import org.testng.Assert;
